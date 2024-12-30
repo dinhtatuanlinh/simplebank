@@ -1,0 +1,7 @@
+mode: set
+simplebank/main.go:14.13,16.16 2 0
+simplebank/main.go:16.16,18.3 1 0
+simplebank/main.go:20.2,21.16 2 0
+simplebank/main.go:21.16,23.3 1 0
+simplebank/main.go:25.2,29.16 4 0
+simplebank/main.go:29.16,31.3 1 0

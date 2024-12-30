@@ -2,9 +2,16 @@ package main
 
 import (
 	"database/sql"
-	"github.com/dinhtatuanlinh/simplebank/api"
-	db "github.com/dinhtatuanlinh/simplebank/db/sqlc"
-	"github.com/dinhtatuanlinh/simplebank/util"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"net"
+	"simplebank/api"
+	"simplebank/db"
+	sqlc "simplebank/db/sqlc"
+	"simplebank/gapi"
+	"simplebank/pb"
+	"simplebank/util"
+
 	"log"
 
 	_ "github.com/lib/pq"
@@ -21,10 +28,42 @@ func main() {
 		log.Fatal("cannot connect to db:", err)
 	}
 
-	store := db.NewStore(conn)
-	server := api.NewServer(store)
+	db.RunMigration(&config.MigrationUrl, &config.DBSource)
 
-	err = server.Start(config.ServerAddress)
+	store := sqlc.NewStore(conn)
+	go runGinServer(config, store)
+	runGrpcServer(config, store)
+
+}
+
+func runGrpcServer(config util.Config, store sqlc.Store) {
+	server, err := gapi.NewServer(config, store)
+	if err != nil {
+		log.Fatal("cannot create server:", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	pb.RegisterSimpleBankServer(grpcServer, server)
+	reflection.Register(grpcServer)
+
+	listener, err := net.Listen("tcp", config.GRPCServerAddress)
+	if err != nil {
+		log.Fatal("cannot listen:", err)
+	}
+
+	log.Printf("start gPRC server at %s", config.GRPCServerAddress)
+	if err := grpcServer.Serve(listener); err != nil {
+		log.Fatal("cannot start gRPC server:", err)
+	}
+}
+
+func runGinServer(config util.Config, store sqlc.Store) {
+	server, err := api.NewServer(config, store)
+	if err != nil {
+		log.Fatal("cannot create server:", err)
+	}
+
+	err = server.Start(config.HTTPServerAddress)
 	if err != nil {
 		log.Fatal("cannot start server:", err)
 	}
