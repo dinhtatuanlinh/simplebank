@@ -3,6 +3,7 @@ package gapi
 import (
 	"context"
 	"database/sql"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,7 +19,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 	if violations != nil {
 		return nil, invalidArgumentError(violations)
 	}
-
+	log.Info().Str("file", "/gapi/rpc_login_user.go").Str("func", "LoginUser").Msg("called server.store.GetUser(ctx, req.GetUsername())")
 	user, err := server.store.GetUser(ctx, req.GetUsername())
 	if err != nil {
 		if err == sql.ErrNoRows {

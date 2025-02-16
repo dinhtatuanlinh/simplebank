@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	db "simplebank/db/sqlc"
+	"simplebank/gapi"
 	"simplebank/token"
 	"simplebank/util"
 )
@@ -40,6 +41,8 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 
+	router.Use(gapi.HttpLogger())
+	
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.logUser)
 	router.POST("/tokens/renew_access", server.renewToken)

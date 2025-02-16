@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -96,15 +97,18 @@ func (server *Server) logUser(ctx *gin.Context) {
 	user, err := server.store.GetUser(ctx, req.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			ctx.Error(fmt.Errorf("user not found"))
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
+		ctx.Error(fmt.Errorf("error getting user: %w", err))
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	err = util.CheckPassword(req.Password, user.HashedPassword)
 	if err != nil {
+		ctx.Error(fmt.Errorf("invalid password: %w", err))
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
@@ -114,6 +118,7 @@ func (server *Server) logUser(ctx *gin.Context) {
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
+		ctx.Error(fmt.Errorf("error creating access token: %w", err))
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -123,6 +128,7 @@ func (server *Server) logUser(ctx *gin.Context) {
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
+		ctx.Error(fmt.Errorf("error creating refresh token: %w", err))
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -137,6 +143,7 @@ func (server *Server) logUser(ctx *gin.Context) {
 		ExpiresAt:    refreshPayload.ExpiredAt,
 	})
 	if err != nil {
+		ctx.Error(fmt.Errorf("error creating session: %w", err))
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
