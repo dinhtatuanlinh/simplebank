@@ -9,6 +9,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
+	github.com/jackc/pgx/v5 v5.5.4
 	github.com/lib/pq v1.10.9
 	github.com/o1egl/paseto v1.0.0
 	github.com/rs/zerolog v1.33.0
@@ -38,6 +39,9 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -64,6 +68,7 @@ require (
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

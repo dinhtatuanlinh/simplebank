@@ -2,7 +2,6 @@ package gapi
 
 import (
 	"context"
-	"github.com/lib/pq"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -31,11 +30,8 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	}
 	user, err := server.store.CreateUser(ctx, arg)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				return nil, status.Errorf(codes.AlreadyExists, "user already exists: %s", pqErr.Detail)
-			}
+		if db.ErrorCode(err) == db.UniqueViolation {
+			return nil, status.Errorf(codes.AlreadyExists, "user already exists: %s", err.Error())
 		}
 		return nil, status.Errorf(codes.Internal, "could not create user: %v", err)
 	}

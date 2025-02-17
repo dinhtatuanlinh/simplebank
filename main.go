@@ -1,7 +1,8 @@
 package main
 
 import (
-	"database/sql"
+	"context"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
@@ -14,8 +15,6 @@ import (
 	"simplebank/gapi"
 	"simplebank/pb"
 	"simplebank/util"
-
-	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -28,14 +27,18 @@ func main() {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	conn, err := sql.Open(config.DBDriver, config.DBSource)
+	//conn, err := sql.Open(config.DBDriver, config.DBSource)
+	//if err != nil {
+	//	log.Fatal().Msgf("cannot connect to db: %s", err)
+	//}
+	connPool, err := pgxpool.New(context.Background(), config.DBSource)
 	if err != nil {
 		log.Fatal().Msgf("cannot connect to db: %s", err)
 	}
 
 	db.RunMigration(&config.MigrationUrl, &config.DBSource)
 
-	store := sqlc.NewStore(conn)
+	store := sqlc.NewStore(connPool)
 	go runGinServer(config, store)
 	runGrpcServer(config, store)
 
