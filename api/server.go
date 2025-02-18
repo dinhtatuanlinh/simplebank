@@ -9,25 +9,28 @@ import (
 	"simplebank/gapi"
 	"simplebank/token"
 	"simplebank/util"
+	"simplebank/worker"
 )
 
 type Server struct {
-	config     util.Config
-	store      db.Store
-	tokenMaker token.Maker
-	router     *gin.Engine
+	config          util.Config
+	store           db.Store
+	tokenMaker      token.Maker
+	router          *gin.Engine
+	taskDistributor worker.TaskDistributor
 }
 
-func NewServer(config util.Config, store db.Store) (*Server, error) {
+func NewServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("error creating token maker: %w", err)
 	}
 
 	server := &Server{
-		config:     config,
-		store:      store,
-		tokenMaker: tokenMaker,
+		config:          config,
+		store:           store,
+		tokenMaker:      tokenMaker,
+		taskDistributor: taskDistributor,
 	}
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -42,7 +45,7 @@ func (server *Server) setupRouter() {
 	router := gin.Default()
 
 	router.Use(gapi.HttpLogger())
-	
+
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.logUser)
 	router.POST("/tokens/renew_access", server.renewToken)

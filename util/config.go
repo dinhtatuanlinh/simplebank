@@ -9,6 +9,7 @@ type Config struct {
 	Environment          string        `mapstructure:"ENV"`
 	DBSource             string        `mapstructure:"DB_SOURCE"`
 	MigrationUrl         string        `mapstructure:"MIGRATION_URL"`
+	RedisAddress         string        `mapstructure:"REDIS_ADDRESS"`
 	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
 	GRPCServerAddress    string        `mapstructure:"GRPC_SERVER_ADDRESS"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`

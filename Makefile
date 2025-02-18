@@ -24,4 +24,7 @@ proto:
 	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative --go-grpc_out=pb \
 	--go-grpc_opt=paths=source_relative proto/*.proto
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test mock proto
+redis:
+	docker run --name redis -p 6379:6379 --restart unless-stopped  -d redis:7-alpine
+
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test mock proto redis

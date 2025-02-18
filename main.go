@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -15,6 +16,7 @@ import (
 	"simplebank/gapi"
 	"simplebank/pb"
 	"simplebank/util"
+	"simplebank/worker"
 )
 
 func main() {
@@ -39,13 +41,21 @@ func main() {
 	db.RunMigration(&config.MigrationUrl, &config.DBSource)
 
 	store := sqlc.NewStore(connPool)
-	go runGinServer(config, store)
-	runGrpcServer(config, store)
+
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+	}
+
+	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+
+	go runTaskProcessor(redisOpt, store)
+	go runGinServer(config, store, taskDistributor)
+	runGrpcServer(config, store, taskDistributor)
 
 }
 
-func runGrpcServer(config util.Config, store sqlc.Store) {
-	server, err := gapi.NewServer(config, store)
+func runGrpcServer(config util.Config, store sqlc.Store, taskDistributor worker.TaskDistributor) {
+	server, err := gapi.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Fatal().Msgf("cannot create server: %s", err)
 	}
@@ -66,8 +76,8 @@ func runGrpcServer(config util.Config, store sqlc.Store) {
 	}
 }
 
-func runGinServer(config util.Config, store sqlc.Store) {
-	server, err := api.NewServer(config, store)
+func runGinServer(config util.Config, store sqlc.Store, taskDistributor worker.TaskDistributor) {
+	server, err := api.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Fatal().Msgf("cannot create server: %s", err)
 	}
@@ -75,5 +85,14 @@ func runGinServer(config util.Config, store sqlc.Store) {
 	err = server.Start(config.HTTPServerAddress)
 	if err != nil {
 		log.Fatal().Msgf("cannot start server: %s", err)
+	}
+}
+
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, store sqlc.Store) {
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+	log.Info().Msg("start task processor")
+	err := taskProcessor.Start()
+	if err != nil {
+		log.Fatal().Msg("cannot start task processor")
 	}
 }
