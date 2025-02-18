@@ -3,11 +3,9 @@ package worker
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
-	db "simplebank/db/sqlc"
 )
 
 const TaskSendVerifyEmail = "task:send_verify_email"
@@ -35,14 +33,15 @@ func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(ctx conte
 func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error {
 	var Payload PayloadSendVerifyEmail
 	if err := json.Unmarshal(task.Payload(), &Payload); err != nil {
-		return fmt.Errorf("unmarshal payload error: %w", err)
+		return fmt.Errorf("unmarshal payload error: %w", asynq.SkipRetry)
 	}
 
 	user, err := processor.store.GetUser(ctx, Payload.Username)
 	if err != nil {
-		if errors.Is(err, db.ErrRecordNotFound) {
-			return fmt.Errorf("user not found: %w", err)
-		}
+		// if we set asynq.SkipRetry here there a problem related transaction take time
+		//if errors.Is(err, db.ErrRecordNotFound) {
+		//	return fmt.Errorf("user not found: %w", err)
+		//}
 		return fmt.Errorf("get user error: %w", err)
 	}
 
