@@ -19,6 +19,7 @@ test:
 
 mock:
 	mockgen -package mockdb -destination=db/mock/store.go simplebank/db/sqlc Store
+	mockgen -package mockwk -destination worker/mock/distributor.go simplebank/worker TaskDistributor
 proto:
 	rm -f pb/*.go
 	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative --go-grpc_out=pb \
