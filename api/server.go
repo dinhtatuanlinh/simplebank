@@ -47,7 +47,7 @@ func (server *Server) setupRouter() {
 	router.Use(gapi.HttpLogger())
 
 	router.POST("/users", server.createUser)
-	router.POST("/users/login", server.logUser)
+	router.POST("/users/login", server.loginUser)
 	router.POST("/tokens/renew_access", server.renewToken)
 	router.GET("/verify_email", server.verifyEmail)
 

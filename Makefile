@@ -12,6 +12,8 @@ migratedown:
 	migrate -path db/migration -database "postgresql://root:letmein@localhost:5433/simple_bank?sslmode=disable" -verbose down
 migratedown1:
 	migrate -path db/migration -database "postgresql://root:letmein@localhost:5433/simple_bank?sslmode=disable" -verbose down 1
+new_migration:
+	migrate create -ext sql -dir db/migration -seq $(name)
 sqlc:
 	sqlc generate
 test:
@@ -28,4 +30,4 @@ proto:
 redis:
 	docker run --name redis -p 6379:6379 --restart unless-stopped  -d redis:7-alpine
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test mock proto redis
+.PHONY: postgres createdb dropdb migrateup migratedown new_migration sqlc test mock proto redis

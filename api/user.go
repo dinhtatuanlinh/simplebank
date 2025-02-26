@@ -101,7 +101,7 @@ type logUserResponse struct {
 	User                  userResponse `json:"user"`
 }
 
-func (server *Server) logUser(ctx *gin.Context) {
+func (server *Server) loginUser(ctx *gin.Context) {
 	var req logUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -129,6 +129,7 @@ func (server *Server) logUser(ctx *gin.Context) {
 
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		user.Username,
+		user.Role,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -139,6 +140,7 @@ func (server *Server) logUser(ctx *gin.Context) {
 
 	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
 		user.Username,
+		user.Role,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
