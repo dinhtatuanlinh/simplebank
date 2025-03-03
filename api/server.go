@@ -2,21 +2,22 @@ package api
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/go-playground/validator/v10"
 	db "simplebank/db/sqlc"
 	"simplebank/gapi"
 	"simplebank/token"
 	"simplebank/util"
 	"simplebank/worker"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 type Server struct {
 	config          util.Config
 	store           db.Store
 	tokenMaker      token.Maker
-	router          *gin.Engine
+	Router          *gin.Engine
 	taskDistributor worker.TaskDistributor
 }
 
@@ -59,11 +60,13 @@ func (server *Server) setupRouter() {
 
 	authRoutes.POST("/transfers", server.createTransfer)
 
-	server.router = router
+	server.Router = router
 }
 
+// Start starts the HTTP server on the specified address.
+// This method is kept for backward compatibility with tests.
 func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+	return server.Router.Run(address)
 }
 
 func errorResponse(err error) gin.H {

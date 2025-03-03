@@ -3,6 +3,7 @@ package gapi
 import (
 	"context"
 	"github.com/hibiken/asynq"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -44,6 +45,10 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
 		},
 	}
+
+	log.Info().Msg(">>> CreateUser")
+	time.Sleep(10 * time.Second)
+
 	txResult, err := server.store.CreateUserTx(ctx, arg)
 	if err != nil {
 		if db.ErrorCode(err) == db.UniqueViolation {
@@ -56,6 +61,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		User: convertUser(txResult.User),
 	}
 
+	log.Info().Msg(">>> done CreateUser")
 	return rsp, nil
 }
 
